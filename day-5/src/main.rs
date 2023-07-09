@@ -69,12 +69,10 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     content.lines().skip(skip).for_each(|line| {
         let proc = line.parse::<Procedure>().map_err(|_| panic!("cannot parse moves")).unwrap();
-        let mut temp = stacks[proc.from].clone();
 
         let stack_len = stacks[proc.from].crates.len();
-        let crates = temp.crates.drain((stack_len-proc.count)..).rev();
-        stacks[proc.to].crates.append(&mut crates.collect());
-        stacks[proc.from] = temp;
+        let mut crates = stacks[proc.from].crates.drain((stack_len-proc.count)..).collect();
+        stacks[proc.to].crates.append(&mut crates);
     });
 
     let mut result: String = String::from("");
