@@ -29,16 +29,16 @@ fn from_priority(val: u8) -> char {
     }
 }
 
-fn find_error(rucksack1: &str, rucksack2: &str) -> char {
+fn find_error(rucksack1: &str, rucksack2: &str, rucksack3: &str) -> char {
     let mut store1 = 0u64;
     let mut store2 = 0u64;
+    let mut store3 = 0u64;
 
-    for (a, b) in rucksack1.chars().zip(rucksack2.chars()) {
-        store1 |= 1 << (a.priority() - 1);
-        store2 |= 1 << (b.priority() - 1);
-    }
+    rucksack1.chars().for_each(|v| store1 |= 1 << (v.priority() - 1));
+    rucksack2.chars().for_each(|v| store2 |= 1 << (v.priority() - 1));
+    rucksack3.chars().for_each(|v| store3 |= 1 << (v.priority() - 1));
 
-    let common = store1 & store2;
+    let common = store1 & store2 & store3;
     if common == 0 {
         panic!("there is no common item in rucksacks");
     }
@@ -54,12 +54,17 @@ fn find_error(rucksack1: &str, rucksack2: &str) -> char {
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut sum_priorities: u64 = 0;
-    fs::read_to_string(FILE_PATH)?.lines().for_each(|line| {
-        let len = line.len() / 2;
-        let (rucksack1, rucksack2) = (&line[..len], &line[len..]);
-        let err = find_error(rucksack1, rucksack2);
+    fs::read_to_string(FILE_PATH)?.lines().collect::<Vec<&str>>().chunks(3).for_each(|chunk| {
+        let [line1, line2, line3] = chunk[..3] else { panic!("something went really wrong") };
+        let err = find_error(line1, line2, line3);
         sum_priorities += err.priority() as u64;
-        // println!("error: {}", err);
+
+        // let (line1, line2, line3) = chunk.get;
+        // let len = line.len() / 2;
+        // let (rucksack1, rucksack2) = (&line[..len], &line[len..]);
+        // let err = find_error(rucksack1, rucksack2);
+        // sum_priorities += err.priority() as u64;
+        // // println!("error: {}", err);
     });
 
     println!("Sum of priorities: {}", sum_priorities);
