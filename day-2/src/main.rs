@@ -4,6 +4,7 @@ use std::error::Error;
 // const FILE_PATH: &str = "src/example.txt";
 const FILE_PATH: &str = "src/puzzle.txt";
 
+#[derive(Copy, Clone)]
 enum Choice {
     Rock,
     Paper,
@@ -20,6 +21,35 @@ enum State {
 trait Game {
     fn points(&self) -> i32;
     fn play(&self, _: &Choice) -> (i32, i32);
+    fn response(&self, _: State) -> Choice;
+}
+
+trait Strategies {
+    fn win(self) -> Choice;
+    fn lose(self) -> Choice;
+    fn draw(self) -> Choice;
+}
+
+impl Strategies for Choice {
+    fn win(self) -> Choice {
+        match self {
+            Choice::Rock => Choice::Paper,
+            Choice::Paper => Choice::Scissors,
+            Choice::Scissors => Choice::Rock,
+        }
+    }
+
+    fn lose(self) -> Choice {
+        match self {
+            Choice::Rock => Choice::Scissors,
+            Choice::Paper => Choice::Rock,
+            Choice::Scissors => Choice::Paper,
+        }
+    }
+
+    fn draw(self) -> Choice {
+        self
+    }
 }
 
 impl Game for Choice {
@@ -52,6 +82,15 @@ impl Game for Choice {
             },
         }
     }
+
+    fn response(&self, action: State) -> Choice {
+        match action {
+            State::Draw => self.draw(),
+            State::Won => self.win(),
+            State::Lose => self.lose(),
+            _ => panic!("unimplemented state of game"),
+        }
+    }
 }
 
 fn convert_symbols(symbol: char) -> Choice {
@@ -60,6 +99,15 @@ fn convert_symbols(symbol: char) -> Choice {
         'B' | 'Y' => Choice::Paper,
         'C' | 'Z' => Choice::Scissors,
         _ => panic!("unexpected symbol: {}", symbol),
+    }
+}
+
+fn convert_response(symbol: char) -> State {
+    match symbol {
+        'X' => State::Lose,
+        'Y' => State::Draw,
+        'Z' => State::Won,
+        _ => panic!("unimplemented state of game"),
     }
 }
 
@@ -72,11 +120,12 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         let player1 = convert_symbols(chars.next().expect("cannot get 0 index char"));
         let _ = chars.next();
-        let player2 = convert_symbols(chars.next().expect("cannot get 2 index char"));
+        let response = convert_response(chars.next().expect("cannot get 2 index char"));
 
-        (player1, player2)
+        (player1, response)
     }).for_each(|(opp, me)| {
-        let (a, b) = me.play(&opp);
+        let resp = opp.response(me);
+        let (a, b) = resp.play(&opp);
         own_points += a;
         opponents_points += b;
     });
