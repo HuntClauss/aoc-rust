@@ -7,8 +7,8 @@ const FILE_PATH: &str = "src/puzzle.txt";
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut flags = 0u32;
-    let mut idx = 3;
-    'window: for window in fs::read_to_string(FILE_PATH)?.as_bytes().windows(4) {
+    let mut idx = 13;
+    'window: for window in fs::read_to_string(FILE_PATH)?.as_bytes().windows(14) {
         idx += 1;
         for v in window {
             if flags & (1 << (*v - OFFSET)) != 0 {
